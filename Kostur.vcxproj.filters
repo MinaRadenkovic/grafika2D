@@ -71,6 +71,12 @@
     <None Include="Source\lineShader.frag">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="Source\textureShader.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Source\textureShader.vert">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\bus.PNG">

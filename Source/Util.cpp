@@ -13,8 +13,6 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "../Header/stb_image_resize2.h"
 
-
-// Autor: Nedeljko Tesanovic
 // Opis: pomocne funkcije za zaustavljanje programa, ucitavanje sejdera, tekstura i kursora
 // Smeju se koristiti tokom izrade projekta
 
@@ -24,8 +22,7 @@ int endProgram(std::string message) {
     return -1;
 }
 
-unsigned int compileShader(GLenum type, const char* source)
-{
+unsigned int compileShader(GLenum type, const char* source) {
     //Uzima kod u fajlu na putanji "source", kompajlira ga i vraca sejder tipa "type"
     //Citanje izvornog koda iz fajla
     std::string content = "";
@@ -64,8 +61,8 @@ unsigned int compileShader(GLenum type, const char* source)
     }
     return shader;
 }
-unsigned int createShader(const char* vsSource, const char* fsSource)
-{
+
+unsigned int createShader(const char* vsSource, const char* fsSource) {
     //Pravi objedinjeni sejder program koji se sastoji od Vertex sejdera ciji je kod na putanji vsSource
 
     unsigned int program; //Objedinjeni sejder
@@ -87,8 +84,7 @@ unsigned int createShader(const char* vsSource, const char* fsSource)
     int success;
     char infoLog[512];
     glGetProgramiv(program, GL_VALIDATE_STATUS, &success); //Slicno kao za sejdere
-    if (success == GL_FALSE)
-    {
+    if (success == GL_FALSE) {
         glGetShaderInfoLog(program, 512, NULL, infoLog);
         std::cout << "Objedinjeni sejder ima gresku! Greska: \n";
         std::cout << infoLog << std::endl;
@@ -108,8 +104,7 @@ unsigned loadImageToTexture(const char* filePath) {
     int TextureHeight;
     int TextureChannels;
     unsigned char* ImageData = stbi_load(filePath, &TextureWidth, &TextureHeight, &TextureChannels, 0);
-    if (ImageData != NULL)
-    {
+    if (ImageData != NULL) {
         //Slike se osnovno ucitavaju naopako pa se moraju ispraviti da budu uspravne
         stbi__vertical_flip(ImageData, TextureWidth, TextureHeight, TextureChannels);
 
@@ -132,8 +127,7 @@ unsigned loadImageToTexture(const char* filePath) {
         stbi_image_free(ImageData);
         return Texture;
     }
-    else
-    {
+    else {
         std::cout << "Textura nije ucitana! Putanja texture: " << filePath << std::endl;
         stbi_image_free(ImageData);
         return 0;
@@ -193,7 +187,6 @@ GLFWcursor* loadImageToCursor(const char* filePath) {
         STBIR_RGBA
     );
 
-
     stbi_image_free(data);
 
     GLFWimage image;
@@ -212,8 +205,7 @@ GLFWcursor* loadImageToCursor(const char* filePath) {
 }
 
 
-void limitFramesPerSecond(double targetFps, double& lastTime)
-{
+void limitFramesPerSecond(double targetFps, double& lastTime) {
     double targetFrameTime = 1.0 / targetFps;
     double current = glfwGetTime();
     double elapsed = current - lastTime;
@@ -230,8 +222,7 @@ void limitFramesPerSecond(double targetFps, double& lastTime)
     lastTime = glfwGetTime();
 }
 
-unsigned int compileShaderFromSource(GLenum type, const char* sourceCode)
-{
+unsigned int compileShaderFromSource(GLenum type, const char* sourceCode) {
     unsigned int shader = glCreateShader(type);
 
     glShaderSource(shader, 1, &sourceCode, NULL);

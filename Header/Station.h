@@ -8,10 +8,12 @@ struct Station {
     float x, y;
 };
 
-void initStationRenderer();
+struct StationExtended : public Station {
+    float normX = 0.0f;
+    float normY = 0.0f;
+    StationExtended(int _id, float _x, float _y) : Station{ _id, _x, _y } {}
+};
 
-// Crta jednu stanicu (krug + tekst)
+void initStationRenderer();
 void drawStation(const Station& s, class TextRenderer& textRenderer);
 
-// Kreira niz stanica sa koordinatama
-std::vector<Station> createStations();

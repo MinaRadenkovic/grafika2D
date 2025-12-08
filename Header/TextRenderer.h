@@ -24,7 +24,6 @@ public:
     void RenderTextTopRight(std::string text, float scale, float r, float g, float b, float margin = 10.0f);
     void RenderTextTopLeft(std::string text, float scale, float r, float g, float b, float margin = 10.0f);
 
-
 private:
     std::map<char, Character> Characters;
     unsigned int VAO, VBO;

@@ -3,9 +3,7 @@
 #include FT_FREETYPE_H
 #include <iostream>
 
-// --- Shader helper ---
-unsigned int TextRenderer::createShaderProgram(const char* vertexSrc, const char* fragmentSrc)
-{
+unsigned int TextRenderer::createShaderProgram(const char* vertexSrc, const char* fragmentSrc) {
     auto compileShader = [](GLenum type, const char* src) -> unsigned int {
         unsigned int shader = glCreateShader(type);
         glShaderSource(shader, 1, &src, 0);
@@ -43,9 +41,7 @@ unsigned int TextRenderer::createShaderProgram(const char* vertexSrc, const char
     return program;
 }
 
-// --- Constructor ---
-TextRenderer::TextRenderer(int width, int height) : SCREEN_WIDTH(width), SCREEN_HEIGHT(height)
-{
+TextRenderer::TextRenderer(int width, int height) : SCREEN_WIDTH(width), SCREEN_HEIGHT(height) {
     const char* vShader =
         "#version 330 core\n"
         "layout(location = 0) in vec4 vertex;\n"
@@ -63,7 +59,6 @@ TextRenderer::TextRenderer(int width, int height) : SCREEN_WIDTH(width), SCREEN_
 
     shaderID = createShaderProgram(vShader, fShader);
 
-    // Ortografska matrica: (0,0) gornji levi, (width,height) donji desni
     float projection[16] = {
         2.0f / width, 0, 0, 0,
         0, 2.0f / height, 0, 0,
@@ -74,7 +69,6 @@ TextRenderer::TextRenderer(int width, int height) : SCREEN_WIDTH(width), SCREEN_
     glUseProgram(shaderID);
     glUniformMatrix4fv(glGetUniformLocation(shaderID, "projection"), 1, GL_FALSE, projection);
 
-    // VAO i VBO
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
@@ -92,9 +86,7 @@ TextRenderer::~TextRenderer() {
     }
 }
 
-// --- Load font ---
-void TextRenderer::LoadFont(const char* fontPath, int fontSize)
-{
+void TextRenderer::LoadFont(const char* fontPath, int fontSize) {
     FT_Library ft;
     if (FT_Init_FreeType(&ft)) {
         std::cerr << "ERROR: Could not init FreeType\n";
@@ -144,9 +136,7 @@ void TextRenderer::LoadFont(const char* fontPath, int fontSize)
     FT_Done_FreeType(ft);
 }
 
-// --- Render anywhere ---
-void TextRenderer::RenderText(std::string text, float x, float y, float scale, float r, float g, float b)
-{
+void TextRenderer::RenderText(std::string text, float x, float y, float scale, float r, float g, float b) {
     GLboolean depth = glIsEnabled(GL_DEPTH_TEST);
     if (depth) glDisable(GL_DEPTH_TEST);
 
@@ -190,8 +180,7 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, f
     if (depth) glEnable(GL_DEPTH_TEST);
 }
 
-void TextRenderer::RenderTextDownRight(std::string text, float scale, float r, float g, float b, float margin)
-{
+void TextRenderer::RenderTextDownRight(std::string text, float scale, float r, float g, float b, float margin) {
     float textWidth = 0.0f;
     for (char c : text) {
         auto it = Characters.find(c);
@@ -199,21 +188,19 @@ void TextRenderer::RenderTextDownRight(std::string text, float scale, float r, f
         textWidth += (it->second.Advance >> 6) * scale;
     }
 
-    float x = SCREEN_WIDTH - textWidth - margin;
+    float x = SCREEN_WIDTH - textWidth - margin * 2.0f;
     float y = margin;
 
     RenderText(text, x, y, scale, r, g, b);
 }
 
-void TextRenderer::RenderTextDownLeft(std::string text, float scale, float r, float g, float b, float margin)
-{
+void TextRenderer::RenderTextDownLeft(std::string text, float scale, float r, float g, float b, float margin) {
     float x = margin;
     float y = margin;
     RenderText(text, x, y, scale, r, g, b);
 }
 
-void TextRenderer::RenderTextTopRight(std::string text, float scale, float r, float g, float b, float margin)
-{
+void TextRenderer::RenderTextTopRight(std::string text, float scale, float r, float g, float b, float margin) {
     float textWidth = 0.0f;
     for (char c : text) {
         auto it = Characters.find(c);
@@ -227,10 +214,9 @@ void TextRenderer::RenderTextTopRight(std::string text, float scale, float r, fl
     RenderText(text, x, y, scale, r, g, b);
 }
 
-void TextRenderer::RenderTextTopLeft(std::string text, float scale, float r, float g, float b, float margin)
-{
+void TextRenderer::RenderTextTopLeft(std::string text, float scale, float r, float g, float b, float margin) {
     float x = margin;           // 10 px od leve ivice
-    float y = SCREEN_HEIGHT - 2* margin; // 10 px od vrha
+    float y = SCREEN_HEIGHT - 5.0f * margin; // 10 px od vrha
 
     RenderText(text, x, y, scale, r, g, b);
 }

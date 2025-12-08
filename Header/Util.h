@@ -9,3 +9,4 @@ GLFWcursor* loadImageToCursor(const char* filePath);
 
 void limitFramesPerSecond(double targetFps, double& lastTime);
 unsigned int compileShaderFromSource(GLenum type, const char* sourceCode);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);

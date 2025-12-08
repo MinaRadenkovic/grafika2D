@@ -153,6 +153,8 @@
     <None Include="Source\circleShader.vert" />
     <None Include="Source\lineShader.frag" />
     <None Include="Source\lineShader.vert" />
+    <None Include="Source\textureShader.frag" />
+    <None Include="Source\textureShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\bus.PNG" />

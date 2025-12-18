@@ -1,6 +1,6 @@
 # 2D Bus Route Simulation
 
-**Author:** [Mina Radenković]  
+**Author:** Mina Radenković
 
 ---
 

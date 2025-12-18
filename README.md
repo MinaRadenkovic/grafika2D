@@ -1,53 +1,63 @@
-2D Bus Route Simulation
+# 2D Bus Route Simulation
 
-Overview
+**Author:** [Mina Radenković]  
 
-This project is a 2D graphical application created in C++ using OpenGL 3+ with a programmable pipeline. The application simulates a bus moving along a predefined route with 10 stations labeled 0–9. The route is represented by red curved lines connecting stations, which are displayed as red circles with white numbers.
+---
 
-Features
+## Overview
+A 2D graphical simulation of a bus route implemented in **C++** using **OpenGL 3+** with a programmable pipeline.  
+The application visualizes a bus moving along a **closed route with 10 stations**, showing passenger interactions, control officers, and fines in real time.
 
-Bus movement: The bus moves at a constant speed between stations and stops at each station for 10 seconds.
+---
 
-Bus doors: A door icon shows whether the bus doors are open or closed.
+## Features
+- **Bus Movement:**  
+  - Constant-speed travel between stations.  
+  - Automatic stops at each station for 10 seconds.
 
-Passenger management:
+- **Doors Indicator:**  
+  - Icon displays bus doors open/closed status.  
+  - Doors open while passengers can enter/exit.
 
-Left-click adds a passenger when doors are open.
+- **Passenger Management:**  
+  - Left-click adds a passenger (doors open).  
+  - Right-click removes a passenger (doors open).  
+  - Maximum 50 passengers.
 
-Right-click removes a passenger when doors are open.
+- **Control Officer:**  
+  - Press `K` to insert a control officer.  
+  - Officer stays until the next station.  
+  - Random fines are issued to passengers upon officer exit.
 
-Passenger count is limited from 0 to 50.
+- **Custom Cursor:**  
+  - Yellow diamond-shaped “BUS STOP” sign.
 
-Control officer: Press K to add a control officer. The officer stays until the next station, after which a random number of passengers receive fines. Total fines are displayed on the screen.
+- **HUD Elements:**  
+  - Displays current passenger count, fines, and door status.  
 
-Custom cursor: The cursor is a yellow diamond-shaped "BUS STOP" sign.
+- **Full-Screen & FPS Limit:**  
+  - Full-screen mode.  
+  - Frame rate limited to 75 FPS.  
+  - Press `Escape` to exit at any time.
 
-Full-screen mode with 75 FPS frame limit.
+- **Student Identification:**  
+  - Semi-transparent overlay with name, surname, and index number.
 
-Exit: Press Escape to exit the application at any time.
+---
 
-Student identification: A semi-transparent overlay shows the student's name, surname, and index number.
+## Controls
+| Action                  | Key / Mouse           |
+|-------------------------|----------------------|
+| Add passenger           | Left-click (doors open) |
+| Remove passenger        | Right-click (doors open) |
+| Add control officer     | `K`                  |
+| Exit application        | `Escape`             |
 
-Controls
+---
 
-Mouse left-click: Add passenger (doors open)
+## Requirements
+- C++11 or later  
+- OpenGL 3+ with programmable pipeline  
+- FreeType library (for text rendering)  
 
-Mouse right-click: Remove passenger (doors open)
 
-Keyboard K: Add control officer
-
-Keyboard Escape: Exit application
-
-Requirements
-
-C++ compiler supporting C++11 or later
-
-OpenGL 3+ with programmable pipeline
-
-FreeType library (for text rendering)
-
-Notes
-
-The bus route is closed-loop: station 0 connects to station 9.
-
-Passengers and fines are updated in real-time during stops.

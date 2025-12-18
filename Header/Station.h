@@ -14,6 +14,6 @@ struct StationExtended : public Station {
     StationExtended(int _id, float _x, float _y) : Station{ _id, _x, _y } {}
 };
 
-void initStationRenderer();
-void drawStation(const Station& s, class TextRenderer& textRenderer);
+void drawStationCircle(const StationExtended& s, unsigned int shaderID);
+void drawCurvedPath(const std::vector<StationExtended>& stations, unsigned int shaderID);
 

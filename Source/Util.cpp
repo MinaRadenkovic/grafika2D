@@ -13,8 +13,6 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "../Header/stb_image_resize2.h"
 
-// Opis: pomocne funkcije za zaustavljanje programa, ucitavanje sejdera, tekstura i kursora
-// Smeju se koristiti tokom izrade projekta
 
 int endProgram(std::string message) {
     std::cout << message << std::endl;
@@ -199,7 +197,7 @@ GLFWcursor* loadImageToCursor(const char* filePath) {
 
     GLFWcursor* cursor = glfwCreateCursor(&image, hotspotX, hotspotY);
 
-    //delete[] resized;
+    delete[] resized;
 
     return cursor;
 }

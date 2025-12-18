@@ -4,8 +4,7 @@
 #include <GL/glew.h>
 #include <random>
 
-void updateBus(Bus& bus, const std::vector<StationExtended>& stations, float deltaTime)
-{
+void updateBus(Bus& bus, const std::vector<StationExtended>& stations, float deltaTime) {
     const float MOVE_SPEED = 0.8f;
     const float STOP_DURATION = 10.0f;
 
@@ -14,11 +13,7 @@ void updateBus(Bus& bus, const std::vector<StationExtended>& stations, float del
         bus.t += MOVE_SPEED * deltaTime;
         if (bus.t >= 1.0f) {
             bus.t = 0.0f;
-            bus.currentSegment++;
-
-            if (bus.currentSegment >= (int)stations.size() - 1)
-                bus.currentSegment = (int)stations.size() - 2;
-
+            bus.currentSegment = (bus.currentSegment + 1) % stations.size();
             bus.atStation = true;
             bus.stopTime = 0.0f;
         }
@@ -137,8 +132,7 @@ void drawBus(const Bus& bus, const std::vector<StationExtended>& stations, unsig
     }
 }
 
-void drawBusDoor(const Bus& bus, unsigned int shaderID)
-{
+void drawBusDoor(const Bus& bus, unsigned int shaderID) {
     float margin = 0.05f;
     float height = 0.25f;
     float width = height * 0.75f;

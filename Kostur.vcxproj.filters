@@ -77,6 +77,8 @@
     <None Include="Source\textureShader.vert">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="windshield.vert" />
+    <None Include="windshield.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\bus.PNG">
@@ -92,6 +94,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Resources\door_opened.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\slike\road.jpg">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -8,13 +8,30 @@
 #include <vector>
 #include <cmath>
 #include "../Header/stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 unsigned int circleShaderID;
 unsigned int lineShaderID;
-unsigned  int busShaderID;
+unsigned int busShaderID;
+unsigned int windshieldShader;
 int windowWidth = 0;
 int windowHeight = 0;
+unsigned int windshieldVAO, windshieldVBO;
+unsigned int panelFBO;
+unsigned int panelTexture;
 
+float yaw = 0.0f;
+float pitch = 0.0f;
+
+float lastX = windowWidth / 2;
+float lastY = windowHeight / 2;
+bool firstMouse = true;
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 1.5f, 0.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     if (action != GLFW_PRESS) return;
@@ -32,6 +49,41 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // Pitch limit
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+
+    // Yaw limit (180° total)
+    if (yaw > 90.0f) yaw = 90.0f;
+    if (yaw < -90.0f) yaw = -90.0f;
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw - 90.0f)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw - 90.0f)) * cos(glm::radians(pitch));
+
+    cameraFront = glm::normalize(front);
+}
 
 int main() {
     if (!glfwInit())
@@ -51,10 +103,13 @@ int main() {
         return endProgram("Prozor nije uspeo da se kreira.");
 
     glfwMakeContextCurrent(window);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
 
     if (glewInit() != GLEW_OK)
         return endProgram("GLEW nije uspeo da se inicijalizuje.");
 
+	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.2f, 0.8f, 0.6f, 1.0f);
@@ -70,6 +125,7 @@ int main() {
     circleShaderID = createShader("Source/circleShader.vert", "Source/circleShader.frag");
     lineShaderID = createShader("Source/lineShader.vert", "Source/lineShader.frag");
     busShaderID = createShader("Source/textureShader.vert", "Source/textureShader.frag");
+    windshieldShader = createShader("Source/windshield.vert", "Source/windshield.frag");
 
     std::vector<StationExtended> stations = {
     {0, 100, 100}, {1, 200, 150}, {2, 300, 120}, {3, 400, 200},
@@ -126,6 +182,80 @@ int main() {
     double lastTime = glfwGetTime();
     const double TARGET_FPS = 75.0;
 
+    unsigned int roadTex = loadImageToTexture("Resources/road.jpg");
+    glBindTexture(GL_TEXTURE_2D, roadTex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    float windshieldVertices[] = {
+
+        -2.0f,  2.5f, -3.0f,     0.0f, 1.0f,
+        -2.0f,  0.5f, -3.0f,     0.0f, 0.0f,
+         2.0f,  0.5f, -3.0f,     1.0f, 0.0f,
+
+        -2.0f,  2.5f, -3.0f,     0.0f, 1.0f,
+         2.0f,  0.5f, -3.0f,     1.0f, 0.0f,
+         2.0f,  2.5f, -3.0f,     1.0f, 1.0f
+    };
+
+    glGenVertexArrays(1, &windshieldVAO);
+    glGenBuffers(1, &windshieldVBO);
+
+    glBindVertexArray(windshieldVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, windshieldVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(windshieldVertices),
+        windshieldVertices, GL_STATIC_DRAW);
+
+    // position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
+        5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // texCoords
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,
+        5 * sizeof(float),
+        (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    float panelVertices[] = {
+        // pozicija             // tex
+        -1.5f, -0.5f, -2.0f,     0.0f, 1.0f,
+        -1.5f, -1.5f, -2.0f,     0.0f, 0.0f,
+         1.5f, -1.5f, -2.0f,     1.0f, 0.0f,
+
+        -1.5f, -0.5f, -2.0f,     0.0f, 1.0f,
+         1.5f, -1.5f, -2.0f,     1.0f, 0.0f,
+         1.5f, -0.5f, -2.0f,     1.0f, 1.0f
+    };
+
+    glGenFramebuffers(1, &panelFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, panelFBO);
+
+    glGenTextures(1, &panelTexture);
+    glBindTexture(GL_TEXTURE_2D, panelTexture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+        1024, 1024,
+        0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        panelTexture,
+        0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "FBO nije kompletan!\n";
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         float deltaTime = float(currentTime - lastTime);
@@ -141,7 +271,48 @@ int main() {
         }
 
         limitFramesPerSecond(TARGET_FPS, lastTime);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        //3D;
+        glUseProgram(windshieldShader);
+
+        // perspektiva
+        glm::mat4 projection = glm::perspective(
+            glm::radians(60.0f),
+            (float)windowWidth / windowHeight,
+            0.1f, 100.0f
+        );
+
+        glm::mat4 view = glm::lookAt(
+            cameraPos,
+            cameraPos + cameraFront,
+            cameraUp
+        );
+
+        glUniformMatrix4fv(glGetUniformLocation(windshieldShader, "projection"),
+            1, GL_FALSE, &projection[0][0]);
+
+        glUniformMatrix4fv(glGetUniformLocation(windshieldShader, "view"),
+            1, GL_FALSE, &view[0][0]);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, roadTex);
+        glUniform1i(glGetUniformLocation(windshieldShader, "tex"), 0);
+
+        // blend ON
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glBindVertexArray(windshieldVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+
+
+        // 2D
+
+		glDisable(GL_DEPTH_TEST);
+
 
         drawCurvedPath(stations, lineShaderID);
 
@@ -159,8 +330,10 @@ int main() {
         std::string infoText = "Putnici: " + std::to_string(bus.passengers) +
             "    Kazne: " + std::to_string(bus.finesCollected);        
         textRenderer.RenderTextDownRight(infoText, 1.0f, 1.0f, 1.0f, 1.0f, 10.0f);
+
         textRenderer.RenderTextTopLeft("Mina Radenkovic SV76/2022", 1.0f, 1.0f, 1.0f, 1.0f);
 
+		glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

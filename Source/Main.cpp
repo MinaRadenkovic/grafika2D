@@ -255,7 +255,6 @@ int main() {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         float deltaTime = float(currentTime - lastTime);

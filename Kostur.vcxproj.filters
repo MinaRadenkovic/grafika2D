@@ -77,8 +77,18 @@
     <None Include="Source\textureShader.vert">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="windshield.vert" />
-    <None Include="windshield.frag" />
+    <None Include="panel.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="panel.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="windshield.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Source\windshield.vert">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\bus.PNG">

@@ -76,8 +76,8 @@ void drawStationCircle(const StationExtended& s, unsigned int shaderID) {
     float ndcX = s.normX * 2.0f - 1.0f;
     float ndcY = 1.0f - s.normY * 2.0f;
 
-    glUniform2f(glGetUniformLocation(shaderID, "uPosition"), ndcX, ndcY);
     glUniform1f(glGetUniformLocation(shaderID, "uScale"), 0.07f);
+    glUniform2f(glGetUniformLocation(shaderID, "uPosition"), ndcX, ndcY);
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

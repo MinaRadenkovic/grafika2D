@@ -221,3 +221,14 @@ void TextRenderer::RenderTextTopLeft(std::string text, float scale, float r, flo
     RenderText(text, x, y, scale, r, g, b);
 }
 
+void TextRenderer::SetScreenSize(int width, int height) {
+    float projection[16] = {
+        2.0f / width, 0, 0, 0,
+        0, 2.0f / height, 0, 0,
+        0, 0, -1, 0,
+       -1, -1, 0, 1
+    };
+
+    glUseProgram(shaderID);
+    glUniformMatrix4fv(glGetUniformLocation(shaderID, "projection"), 1, GL_FALSE, projection);
+}

@@ -16,11 +16,13 @@ unsigned int circleShaderID;
 unsigned int lineShaderID;
 unsigned int busShaderID;
 unsigned int windshieldShader;
+unsigned int panelShader;
 int windowWidth = 0;
 int windowHeight = 0;
 unsigned int windshieldVAO, windshieldVBO;
 unsigned int panelFBO;
 unsigned int panelTexture;
+unsigned int panelVAO, panelVBO;
 
 float yaw = 0.0f;
 float pitch = 0.0f;
@@ -69,11 +71,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     yaw += xoffset;
     pitch += yoffset;
 
-    // Pitch limit
     if (pitch > 89.0f) pitch = 89.0f;
     if (pitch < -89.0f) pitch = -89.0f;
 
-    // Yaw limit (180° total)
     if (yaw > 90.0f) yaw = 90.0f;
     if (yaw < -90.0f) yaw = -90.0f;
 
@@ -126,6 +126,7 @@ int main() {
     lineShaderID = createShader("Source/lineShader.vert", "Source/lineShader.frag");
     busShaderID = createShader("Source/textureShader.vert", "Source/textureShader.frag");
     windshieldShader = createShader("Source/windshield.vert", "Source/windshield.frag");
+	panelShader = createShader("Source/panel.vert", "Source/panel.frag");
 
     std::vector<StationExtended> stations = {
     {0, 100, 100}, {1, 200, 150}, {2, 300, 120}, {3, 400, 200},
@@ -188,7 +189,6 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     float windshieldVertices[] = {
-
         -2.0f,  2.5f, -3.0f,     0.0f, 1.0f,
         -2.0f,  0.5f, -3.0f,     0.0f, 0.0f,
          2.0f,  0.5f, -3.0f,     1.0f, 0.0f,
@@ -204,51 +204,50 @@ int main() {
     glBindVertexArray(windshieldVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, windshieldVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(windshieldVertices),
-        windshieldVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(windshieldVertices), windshieldVertices, GL_STATIC_DRAW);
 
-    // position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-        5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    // texCoords
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,
-        5 * sizeof(float),
-        (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
+    glGenVertexArrays(1, &panelVAO);
+    glGenBuffers(1, &panelVBO);
 
     float panelVertices[] = {
-        // pozicija             // tex
-        -1.5f, -0.5f, -2.0f,     0.0f, 1.0f,
-        -1.5f, -1.5f, -2.0f,     0.0f, 0.0f,
-         1.5f, -1.5f, -2.0f,     1.0f, 0.0f,
+        -0.5f, 0.4f, -3.0f,     0.0f, 1.0f,  // gornji levi
+        -0.5f, -0.8f, -3.0f,     0.0f, 0.0f,  // donji levi
+         2.0f, -0.8f, -3.0f,     1.0f, 0.0f,  // donji desni
 
-        -1.5f, -0.5f, -2.0f,     0.0f, 1.0f,
-         1.5f, -1.5f, -2.0f,     1.0f, 0.0f,
-         1.5f, -0.5f, -2.0f,     1.0f, 1.0f
+        -0.5f, 0.4f, -3.0f,     0.0f, 1.0f,  // gornji levi
+         2.0f, -0.8f, -3.0f,     1.0f, 0.0f,  // donji desni
+         2.0f, 0.4f, -3.0f,     1.0f, 1.0f   // gornji desni
     };
 
+    glBindVertexArray(panelVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, panelVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(panelVertices), panelVertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
     glGenFramebuffers(1, &panelFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, panelFBO);
 
     glGenTextures(1, &panelTexture);
     glBindTexture(GL_TEXTURE_2D, panelTexture);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-        1024, 1024,
-        0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER,
-        GL_COLOR_ATTACHMENT0,
-        GL_TEXTURE_2D,
-        panelTexture,
-        0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, panelTexture, 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "FBO nije kompletan!\n";
@@ -272,46 +271,11 @@ int main() {
         limitFramesPerSecond(TARGET_FPS, lastTime);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //3D;
-        glUseProgram(windshieldShader);
+        glBindFramebuffer(GL_FRAMEBUFFER, panelFBO);
+        glViewport(0, 0, 1024, 1024);
 
-        // perspektiva
-        glm::mat4 projection = glm::perspective(
-            glm::radians(60.0f),
-            (float)windowWidth / windowHeight,
-            0.1f, 100.0f
-        );
-
-        glm::mat4 view = glm::lookAt(
-            cameraPos,
-            cameraPos + cameraFront,
-            cameraUp
-        );
-
-        glUniformMatrix4fv(glGetUniformLocation(windshieldShader, "projection"),
-            1, GL_FALSE, &projection[0][0]);
-
-        glUniformMatrix4fv(glGetUniformLocation(windshieldShader, "view"),
-            1, GL_FALSE, &view[0][0]);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, roadTex);
-        glUniform1i(glGetUniformLocation(windshieldShader, "tex"), 0);
-
-        // blend ON
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        glBindVertexArray(windshieldVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-
-
-
-        // 2D
-
-		glDisable(GL_DEPTH_TEST);
-
+        glDisable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         drawCurvedPath(stations, lineShaderID);
 
@@ -327,12 +291,66 @@ int main() {
         drawBusDoor(bus, busShaderID);
 
         std::string infoText = "Putnici: " + std::to_string(bus.passengers) +
-            "    Kazne: " + std::to_string(bus.finesCollected);        
+            "    Kazne: " + std::to_string(bus.finesCollected);
+
         textRenderer.RenderTextDownRight(infoText, 1.0f, 1.0f, 1.0f, 1.0f, 10.0f);
+        textRenderer.RenderTextTopLeft("Mina Radenkovic SV76/2022", 1, 1, 1, 1);
 
-        textRenderer.RenderTextTopLeft("Mina Radenkovic SV76/2022", 1.0f, 1.0f, 1.0f, 1.0f);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, windowWidth, windowHeight);
 
-		glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // 3D
+        glUseProgram(windshieldShader);
+
+        glm::mat4 projection = glm::perspective(
+            glm::radians(60.0f),
+            (float)windowWidth / windowHeight,
+            0.1f, 100.0f
+        );
+
+        glm::mat4 view = glm::lookAt(
+            cameraPos,
+            cameraPos + cameraFront,
+            cameraUp
+        );
+
+        glUniformMatrix4fv(glGetUniformLocation(windshieldShader, "projection"),
+            1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(windshieldShader, "view"),
+            1, GL_FALSE, &view[0][0]);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, roadTex);
+        glUniform1i(glGetUniformLocation(windshieldShader, "tex"), 0);
+
+        glBindVertexArray(windshieldVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+        // 2D panel ispod windshielda
+        glUseProgram(panelShader);
+
+        glUniformMatrix4fv(glGetUniformLocation(panelShader, "projection"),
+            1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(panelShader, "view"),
+            1, GL_FALSE, &view[0][0]);
+
+        glDisable(GL_BLEND);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, panelTexture);
+        glUniform1i(glGetUniformLocation(panelShader, "tex"), 0);
+
+        glBindVertexArray(panelVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+        glEnable(GL_BLEND);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
